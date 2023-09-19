@@ -1,6 +1,3 @@
-import { Vector2 } from 'three'
-import Node from './Node'
-
 export default class Graph {
 	nodes = []
 	edges = []

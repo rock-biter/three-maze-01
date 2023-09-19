@@ -1,29 +1,20 @@
-import {
-	BoxGeometry,
-	Mesh,
-	MeshNormalMaterial,
-	MeshStandardMaterial,
-	Vector2,
-	Vector3,
-} from 'three'
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry'
+import { BoxGeometry, Mesh, MeshNormalMaterial, Vector2, Vector3 } from 'three'
 import Graph from './Graph'
 import Node from './Node'
 
-const CELL_MATERIAL = new MeshStandardMaterial({ color: 0xdbdbdb })
-const HEIGHT = 0.05
-
 export default class Maze extends Graph {
-	constructor({ resolution = new Vector2(20, 20), cellSize = 1, scene } = {}) {
+	constructor({ resolution = new Vector2(20, 20), scene }) {
 		super()
 
-		this.scene = scene
 		this.resolution = resolution
-		this.cellSize = cellSize
+		this.scene = scene
 
-		for (let i = 0; i < resolution.x * resolution.y; i++) {
-			const cell = this.addNode(new Cell({ maze: this }))
-			this.scene.add(cell.draw())
+		const { x, y } = resolution
+
+		for (let i = 0; i < x * y; i++) {
+			const cell = new Cell({ maze: this })
+			this.addNode(cell)
+			cell.setPosition()
 		}
 
 		this.generate()
@@ -31,16 +22,17 @@ export default class Maze extends Graph {
 
 	generate() {
 		const stack = []
-		let currentNode = this.nodes[26]
+		let currentNode = this.nodes[0]
 		currentNode.visited = true
 
 		do {
-			const neighborsIndex = currentNode.getNeighbors()
-			const unvisitedNeighbors = this.nodes.filter((node, i) => {
-				return !node.visited && neighborsIndex.includes(i)
+			const neighborsIndex = currentNode.getNeighborsIndex()
+			const unvisitedNeighbors = this.nodes.filter((cell) => {
+				return !cell.visited && neighborsIndex.includes(cell.index)
 			})
 
 			const n = unvisitedNeighbors.length
+
 			if (n > 1) {
 				stack.push(currentNode)
 			}
@@ -49,8 +41,8 @@ export default class Maze extends Graph {
 				const i = Math.floor(Math.random() * n)
 				const nextNode = unvisitedNeighbors[i]
 				const [edge] = this.addEdge(currentNode, nextNode)
-				const edgeMesh = this.drawEdge(edge)
-				this.scene.add(edgeMesh)
+
+				this.addBridge(currentNode, nextNode)
 
 				currentNode = nextNode
 				nextNode.visited = true
@@ -62,55 +54,43 @@ export default class Maze extends Graph {
 		} while (stack.length)
 	}
 
-	drawEdge(edge) {
-		const { from, to } = edge
+	addBridge(nodeA, nodeB) {
+		const geometry = new BoxGeometry(0.45, 0.05, 0.45)
+		const material = new MeshNormalMaterial()
+		const mesh = new Mesh(geometry, material)
 
-		const cellSize = this.cellSize
-		this.geometry = new RoundedBoxGeometry(
-			cellSize / 2 - 0.05,
-			HEIGHT,
-			cellSize / 2 - 0.05,
-			5,
-			HEIGHT / 2
-		)
-		this.material = CELL_MATERIAL
-		this.mesh = new Mesh(this.geometry, this.material)
+		mesh.position.copy(nodeA.mesh.position)
+		mesh.position.lerp(nodeB.mesh.position, 0.5)
 
-		this.mesh.position.copy(from.mesh.position).lerp(to.mesh.position, 0.5)
-		this.mesh.position.y = -HEIGHT / 2
-
-		return this.mesh
+		this.scene.add(mesh)
 	}
 }
 
 export class Cell extends Node {
-	visited = false
-
 	constructor({ maze }) {
 		super()
+
 		this.maze = maze
+		this.geometry = new BoxGeometry(0.45, 0.05, 0.45)
+		this.material = new MeshNormalMaterial()
+		this.mesh = new Mesh(this.geometry, this.material)
 	}
 
-	/**
-	 * get space coordinates by index of cell
-	 */
 	getPositionByIndex() {
 		const p = new Vector3(0, 0, 0)
-		const { resolution, cellSize } = this.maze
+		const { resolution } = this.maze
 
-		p.x =
-			(this.index % resolution.x) * cellSize -
-			(resolution.x * cellSize) / 2 +
-			cellSize / 2
-		p.z =
-			Math.floor(this.index / resolution.x) * cellSize -
-			(resolution.y * cellSize) / 2 +
-			cellSize / 2
+		p.x = (this.index % resolution.x) - resolution.x / 2 + 0.5
+		p.z = Math.floor(this.index / resolution.x) - resolution.y / 2 + 0.5
 
 		return p
 	}
 
-	getNeighbors() {
+	setPosition() {
+		this.mesh.position.copy(this.getPositionByIndex())
+	}
+
+	getNeighborsIndex() {
 		const { resolution } = this.maze
 
 		const topIndex = this.index - resolution.x
@@ -134,28 +114,10 @@ export class Cell extends Node {
 			neighbors.push(leftIndex)
 		}
 
-		if (col != resolution.x - 1) {
+		if (col < resolution.x - 1) {
 			neighbors.push(rightIndex)
 		}
 
 		return neighbors
-	}
-
-	draw() {
-		const { cellSize } = this.maze
-		this.geometry = new RoundedBoxGeometry(
-			cellSize / 2 - 0.05,
-			HEIGHT,
-			cellSize / 2 - 0.05,
-			5,
-			HEIGHT / 2
-		)
-		this.material = CELL_MATERIAL
-		this.mesh = new Mesh(this.geometry, this.material)
-
-		this.mesh.position.copy(this.getPositionByIndex())
-		this.mesh.position.y = -HEIGHT / 2
-
-		return this.mesh
 	}
 }

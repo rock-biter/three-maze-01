@@ -5,18 +5,18 @@ export default class Node {
 	visited = false
 	index = 0
 
-	addConnection(connection) {
-		this.edges.push(connection)
+	addEdge(edge) {
+		this.edges.push(edge)
 	}
 
 	connectTo(node) {
-		const connection = new Edge(this, node)
-		this.addConnection(connection)
-		return connection
+		const edge = new Edge(this, node)
+		this.addEdge(edge)
+		return edge
 	}
 
-	removeConnection(connection) {
-		const i = this.edges.indexOf(connection)
+	removeEdge(edge) {
+		const i = this.edges.indexOf(edge)
 		if (i >= 0) {
 			this.edges.splice(i, 1)
 		}

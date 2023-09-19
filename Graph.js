@@ -4,14 +4,18 @@ import Node from './Node'
 export default class Graph {
 	nodes = []
 
-	addNode() {
+	addNode(node) {
 		const nextIndex = this.nodes.length
-		const node = new Node({ index: nextIndex })
+		node.index = nextIndex
 		this.nodes.push(node)
+
+		return node
 	}
 
-	addConnection(nodeA, nodeB) {
-		nodeA.connectTo(nodeB)
-		nodeB.connectTo(nodeA)
+	addEdge(nodeA, nodeB) {
+		const edgeA = nodeA.connectTo(nodeB)
+		const edgeB = nodeB.connectTo(nodeA)
+
+		return [edgeA, edgeB]
 	}
 }

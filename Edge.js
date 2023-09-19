@@ -1,4 +1,4 @@
-export default class Connection {
+export default class Edge {
 	nodes = []
 
 	constructor(from, to) {

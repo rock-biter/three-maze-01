@@ -1,20 +1,18 @@
-import Connection from './Connection'
+import Edge from './Edge'
 
 export default class Node {
 	connections = []
 	visited = false
-
-	constructor({ index }) {
-		this.index = index
-	}
+	index = 0
 
 	addConnection(connection) {
 		this.connections.push(connection)
 	}
 
 	connectTo(node) {
-		const connection = new Connection(this, node)
+		const connection = new Edge(this, node)
 		this.addConnection(connection)
+		return connection
 	}
 
 	removeConnection(connection) {

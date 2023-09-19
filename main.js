@@ -132,7 +132,7 @@ let prevNode
 
 function movePlayer() {
 	// const neighborsIndex = currentNode.getNeighbors()
-	let neighbors = currentNode.connections.map(({ to }) => to)
+	let neighbors = currentNode.connectedNodes
 
 	if (neighbors.length > 1 && prevNode) {
 		neighbors = neighbors.filter((node) => node !== prevNode)

@@ -3,6 +3,7 @@ import Node from './Node'
 
 export default class Graph {
 	nodes = []
+	edges = []
 
 	addNode(node) {
 		const nextIndex = this.nodes.length
@@ -15,6 +16,8 @@ export default class Graph {
 	addEdge(nodeA, nodeB) {
 		const edgeA = nodeA.connectTo(nodeB)
 		const edgeB = nodeB.connectTo(nodeA)
+
+		this.edges.push(edgeA, edgeB)
 
 		return [edgeA, edgeB]
 	}

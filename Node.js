@@ -1,12 +1,12 @@
 import Edge from './Edge'
 
 export default class Node {
-	connections = []
+	edges = []
 	visited = false
 	index = 0
 
 	addConnection(connection) {
-		this.connections.push(connection)
+		this.edges.push(connection)
 	}
 
 	connectTo(node) {
@@ -16,13 +16,13 @@ export default class Node {
 	}
 
 	removeConnection(connection) {
-		const i = this.connections.indexOf(connection)
+		const i = this.edges.indexOf(connection)
 		if (i >= 0) {
-			this.connections.splice(i, 1)
+			this.edges.splice(i, 1)
 		}
 	}
 
 	get connectedNodes() {
-		return this.connections.map(({ to }) => to)
+		return this.edges.map(({ to }) => to)
 	}
 }
